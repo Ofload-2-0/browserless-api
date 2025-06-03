@@ -4,7 +4,7 @@
 [![Helm Chart](https://img.shields.io/badge/Helm-v3.12+-blue.svg)](https://helm.sh/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.24+-blue.svg)](https://kubernetes.io/)
 
-Production-ready Helm chart and CI/CD pipeline for deploying [browserless/chrome](https://github.com/browserless/chrome) to Kubernetes clusters, including AWS EKS and local development environments.
+Production-ready Helm chart and CI/CD pipeline for deploying [browserless](https://github.com/browserless) to Kubernetes clusters, including AWS EKS and local development environments.
 
 ## 🚀 Features
 
@@ -224,7 +224,7 @@ helm upgrade --install browserless ./deployment/helm-chart \
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `2` |
-| `image.repository` | Container image repository | `browserless/chrome` |
+| `image.repository` | Container image repository | `browserless` |
 | `image.tag` | Container image tag | `latest` |
 | `resources.requests.cpu` | CPU request | `500m` |
 | `resources.requests.memory` | Memory request | `1Gi` |

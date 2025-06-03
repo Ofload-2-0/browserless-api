@@ -1,0 +1,17 @@
+apiVersion: v2
+name: browserless
+description: A Helm chart for browserless/chrome deployment
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - browserless
+  - chrome
+  - headless
+  - browser
+home: https://github.com/Ofload-2-0/browserless-api
+sources:
+  - https://github.com/Ofload-2-0/browserless-api
+maintainers:
+  - name: Ryan Zeng
+    email: ryan.zeng@ofload.com

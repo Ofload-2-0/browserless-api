@@ -1,0 +1,137 @@
+# Default values for browserless
+replicaCount: 2
+
+image:
+  repository: browserless/chrome
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# This is unnecessary if we do not need any permission
+# serviceAccount:
+#   create: true
+#   annotations: {}
+#   name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: browserless.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Browserless specific configuration
+browserless:
+  token: ""
+  concurrentSessions: 10
+  queueLength: 10
+  prebootChrome: true
+  demoMode: false
+  enableDebugger: false
+  maxCpuPercent: 100
+  maxMemoryPercent: 100
+  keepAlive: true
+  chromeRefreshTime: 3600000
+  enableCors: true
+  enableXvfb: false
+  exitOnHealthFailure: false
+  functionBuiltins: []
+  functionExternals: []
+  port: 3000
+  host: "0.0.0.0"
+
+# Environment variables
+env:
+  - name: CONCURRENT
+    value: "10"
+  - name: QUEUE_LENGTH
+    value: "10"
+  - name: PREBOOT_CHROME
+    value: "true"
+  - name: DEMO_MODE
+    value: "false"
+  - name: ENABLE_DEBUGGER
+    value: "false"
+  - name: MAX_CPU_PERCENT
+    value: "100"
+  - name: MAX_MEMORY_PERCENT
+    value: "100"
+  - name: KEEP_ALIVE
+    value: "true"
+  - name: CHROME_REFRESH_TIME
+    value: "3600000"
+  - name: ENABLE_CORS
+    value: "true"
+  - name: ENABLE_XVFB
+    value: "false"
+  - name: EXIT_ON_HEALTH_FAILURE
+    value: "false"
+  - name: PORT
+    value: "3000"
+  - name: HOST
+    value: "0.0.0.0"
+
+# Health checks
+livenessProbe:
+  httpGet:
+    path: /pressure
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /pressure
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3

@@ -1,0 +1,148 @@
+name: Deploy to AWS EKS
+
+on:
+  push:
+    branches:
+      - prod
+      - staging
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'develop'
+        type: choice
+        options:
+        - develop
+        - staging
+        - production
+
+env:
+  HELM_CHART_PATH: ./deployment/helm-chart
+
+jobs:
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    
+    # Set environment based on branch or manual input
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+        
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.12.0'
+        
+    - name: Update kube config
+      run: |
+        aws eks update-kubeconfig \
+          --name ${{ vars.K8S_CLUSTER }} \
+          --region ${{ secrets.AWS_REGION }}
+          
+    - name: Verify cluster access
+      run: |
+        kubectl cluster-info
+        kubectl get nodes
+        
+    - name: Lint Helm chart
+      run: |
+        helm lint ${{ env.HELM_CHART_PATH }}
+        
+    - name: Dry run Helm deployment
+      run: |
+        NAMESPACE="${{ vars.NAMESPACE || 'browserless' }}"
+        RELEASE_NAME="${{ vars.RELEASE_NAME || 'browserless' }}"
+        
+        helm upgrade --install $RELEASE_NAME ${{ env.HELM_CHART_PATH }} \
+          --namespace $NAMESPACE \
+          --create-namespace \
+          --dry-run \
+          --debug \
+          --set image.tag="${{ github.sha }}" \
+          --set replicaCount="${{ vars.REPLICA_COUNT || '2' }}" \
+          --set resources.requests.cpu="${{ vars.CPU_REQUEST || '500m' }}" \
+          --set resources.requests.memory="${{ vars.MEMORY_REQUEST || '1Gi' }}" \
+          --set resources.limits.cpu="${{ vars.CPU_LIMIT || '1000m' }}" \
+          --set resources.limits.memory="${{ vars.MEMORY_LIMIT || '2Gi' }}" \
+          --set browserless.token="${{ secrets.BROWSERLESS_TOKEN }}" \
+          --set autoscaling.enabled="${{ vars.AUTOSCALING_ENABLED || 'true' }}" \
+          --set autoscaling.minReplicas="${{ vars.MIN_REPLICAS || '2' }}" \
+          --set autoscaling.maxReplicas="${{ vars.MAX_REPLICAS || '10' }}"
+          
+    - name: Deploy to EKS
+      run: |
+        NAMESPACE="${{ vars.NAMESPACE || 'browserless' }}"
+        RELEASE_NAME="${{ vars.RELEASE_NAME || 'browserless' }}"
+        
+        helm upgrade --install $RELEASE_NAME ${{ env.HELM_CHART_PATH }} \
+          --namespace $NAMESPACE \
+          --create-namespace \
+          --wait \
+          --timeout 10m \
+          --set image.tag="${{ github.sha }}" \
+          --set replicaCount="${{ vars.REPLICA_COUNT || '2' }}" \
+          --set resources.requests.cpu="${{ vars.CPU_REQUEST || '500m' }}" \
+          --set resources.requests.memory="${{ vars.MEMORY_REQUEST || '1Gi' }}" \
+          --set resources.limits.cpu="${{ vars.CPU_LIMIT || '1000m' }}" \
+          --set resources.limits.memory="${{ vars.MEMORY_LIMIT || '2Gi' }}" \
+          --set browserless.token="${{ secrets.BROWSERLESS_TOKEN }}" \
+          --set autoscaling.enabled="${{ vars.AUTOSCALING_ENABLED || 'true' }}" \
+          --set autoscaling.minReplicas="${{ vars.MIN_REPLICAS || '2' }}" \
+          --set autoscaling.maxReplicas="${{ vars.MAX_REPLICAS || '10' }}"
+          
+    - name: Verify deployment
+      run: |
+        NAMESPACE="${{ vars.NAMESPACE || 'browserless' }}"
+        RELEASE_NAME="${{ vars.RELEASE_NAME || 'browserless' }}"
+        
+        # Check deployment status
+        kubectl get deployments -n $NAMESPACE
+        kubectl get pods -n $NAMESPACE
+        kubectl get services -n $NAMESPACE
+        kubectl get hpa -n $NAMESPACE
+        
+        # Check Helm release status
+        helm status $RELEASE_NAME -n $NAMESPACE
+        
+        # Wait for pods to be ready
+        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=browserless -n $NAMESPACE --timeout=300s
+        
+    - name: Run health check
+      run: |
+        NAMESPACE="${{ vars.NAMESPACE || 'browserless' }}"
+        SERVICE_NAME="${{ vars.RELEASE_NAME || 'browserless' }}"
+        
+        # Port forward to test the service
+        kubectl port-forward svc/$SERVICE_NAME 3000:3000 -n $NAMESPACE &
+        PF_PID=$!
+        
+        # Wait for port forward to be ready
+        sleep 10
+        
+        # Health check
+        if curl -f http://localhost:3000/pressure; then
+          echo "Health check passed"
+        else
+          echo "Health check failed"
+          exit 1
+        fi
+        
+        # Clean up port forward
+        kill $PF_PID

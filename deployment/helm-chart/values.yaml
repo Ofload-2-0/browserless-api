@@ -2,9 +2,9 @@
 replicaCount: 2
 
 image:
-  repository: browserless/chrome
+  repository: 114211595136.dkr.ecr.ap-southeast-1.amazonaws.com/eos-browserless
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "dev-latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -17,17 +17,6 @@ fullnameOverride: ""
 #   name: ""
 
 podAnnotations: {}
-
-podSecurityContext:
-  fsGroup: 2000
-
-securityContext:
-  capabilities:
-    drop:
-    - ALL
-  readOnlyRootFilesystem: false
-  runAsNonRoot: true
-  runAsUser: 1000
 
 service:
   type: ClusterIP

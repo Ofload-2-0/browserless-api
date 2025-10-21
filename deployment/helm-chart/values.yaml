@@ -2,7 +2,7 @@
 replicaCount: 2
 
 image:
-  repository: 114211595136.dkr.ecr.ap-southeast-1.amazonaws.com/eos-browserless
+  repository: 201418474544.dkr.ecr.ap-southeast-2.amazonaws.com/eos-browserless
   pullPolicy: IfNotPresent
   tag: "dev-latest"
 

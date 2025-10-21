@@ -35,7 +35,11 @@ jobs:
     - name: Set AWS_ROLE_TO_ASSUME_ARN
       id: set-role
       run: |
-        case "${{ github.event.inputs.environment }}" in
+        # assign workflow input to a shell variable
+        ENVIRONMENT="${{ github.event.inputs.environment }}"
+        echo "Selected environment: $ENVIRONMENT"
+
+        case "$ENVIRONMENT" in
           dev)
             echo "AWS_ROLE_TO_ASSUME_ARN=${AWS_DEV_IAM_ROLE}" >> $GITHUB_ENV
             ;;

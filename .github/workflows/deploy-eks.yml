@@ -91,8 +91,8 @@ jobs:
         
     - name: Dry run Helm deployment
       run: |
-        NAMESPACE="${{ vars.NAMESPACE || 'dev' }}"
-        RELEASE_NAME="${{ vars.RELEASE_NAME || 'dev' }}"
+        NAMESPACE="${{ github.event.inputs.environment }}"
+        RELEASE_NAME="${{ github.event.inputs.environment }}"
         
         helm upgrade --install $RELEASE_NAME ${{ env.HELM_CHART_PATH }} \
           --namespace $NAMESPACE \
@@ -112,8 +112,8 @@ jobs:
           
     - name: Deploy to EKS
       run: |
-        NAMESPACE="${{ vars.NAMESPACE || 'dev' }}"
-        RELEASE_NAME="${{ vars.RELEASE_NAME || 'dev' }}"
+        NAMESPACE="${{ github.event.inputs.environment }}"
+        RELEASE_NAME="${{ github.event.inputs.environment }}"
         
         helm upgrade --install $RELEASE_NAME ${{ env.HELM_CHART_PATH }} \
           --namespace $NAMESPACE \
@@ -133,8 +133,8 @@ jobs:
           
     - name: Verify deployment
       run: |
-        NAMESPACE="${{ vars.NAMESPACE || 'dev' }}"
-        RELEASE_NAME="${{ vars.RELEASE_NAME || 'dev' }}"
+        NAMESPACE="${{ github.event.inputs.environment }}"
+        RELEASE_NAME="${{ github.event.inputs.environment }}"
         
         # Check deployment status
         kubectl get deployments -n $NAMESPACE
@@ -150,8 +150,8 @@ jobs:
         
     - name: Run health check
       run: |
-        NAMESPACE="${{ vars.NAMESPACE || 'dev' }}"
-        SERVICE_NAME="${{ vars.RELEASE_NAME || 'dev' }}"
+        NAMESPACE="${{ github.event.inputs.environment }}"
+        SERVICE_NAME="${{ github.event.inputs.environment }}"
         
         # Port forward to test the service
         kubectl port-forward svc/$SERVICE_NAME 3000:3000 -n $NAMESPACE &

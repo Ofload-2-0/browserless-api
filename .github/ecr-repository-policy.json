@@ -1,0 +1,94 @@
+{
+    "Version": "2008-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowPull",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::958254112077:root"
+            },
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+            ]
+        },
+        {
+            "Sid": "AllowLambdaPull",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+            ],
+            "Condition": {
+                "StringLike": {
+                    "aws:sourceARN": "arn:aws:lambda:*:958254112077:function:*"
+                }
+            }
+        },
+        {
+            "Sid": "AllowPull",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::905418036662:root"
+            },
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+            ]
+        },
+        {
+            "Sid": "AllowLambdaPull",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+            ],
+            "Condition": {
+                "StringLike": {
+                    "aws:sourceARN": "arn:aws:lambda:*:905418036662:function:*"
+                }
+            }
+
+        },
+        {
+            "Sid": "AllowPull",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::654654453699:root"
+            },
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+            ]
+        },
+        {
+            "Sid": "AllowLambdaPull",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+            ],
+            "Condition": {
+                "StringLike": {
+                    "aws:sourceARN": "arn:aws:lambda:*:654654453699:function:*"
+                }
+            }
+
+        }
+    ]
+}
